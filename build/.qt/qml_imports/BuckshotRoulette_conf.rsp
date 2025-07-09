@@ -1,0 +1,13 @@
+-rootPath
+Q:/BuckshotRoulette
+-cmake-output
+-output-file
+Q:/BuckshotRoulette/build/.qt/qml_imports/BuckshotRoulette_conf.cmake
+-importPath
+Q:/BuckshotRoulette/build
+-importPath
+Q:/msys64/mingw64/share/qt6/qml
+-qrcFiles
+Q:/BuckshotRoulette/build/.qt/rcc/qml.qrc
+Q:/BuckshotRoulette/build/.qt/rcc/images.qrc
+Q:/BuckshotRoulette/build/.qt/rcc/sounds.qrc

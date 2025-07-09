@@ -1,0 +1,15 @@
+<RCC>
+  <qresource prefix="/images">
+    <file alias="background.png">Q:/BuckshotRoulette/images/background.png</file>
+    <file alias="menu_bg.png">Q:/BuckshotRoulette/images/menu_bg.png</file>
+    <file alias="game_bg.png">Q:/BuckshotRoulette/images/game_bg.png</file>
+    <file alias="enemy.png">Q:/BuckshotRoulette/images/enemy.png</file>
+    <file alias="player.jpg">Q:/BuckshotRoulette/images/player.jpg</file>
+    <file alias="shotgun.png">Q:/BuckshotRoulette/images/shotgun.png</file>
+    <file alias="bullet1.png">Q:/BuckshotRoulette/images/bullet1.png</file>
+    <file alias="bullet2.png">Q:/BuckshotRoulette/images/bullet2.png</file>
+    <file alias="heart1.png">Q:/BuckshotRoulette/images/heart1.png</file>
+    <file alias="heart2.png">Q:/BuckshotRoulette/images/heart2.png</file>
+  </qresource>
+</RCC>
+

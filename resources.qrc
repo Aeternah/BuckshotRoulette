@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/Menu.qml</file>
+        <file>qml/Game.qml</file>
+    </qresource>
+    <qresource prefix="/images">
+        <file>images/background.png</file>
+        <file>images/shotgun.png</file>
+        <file>images/bullet1.png</file>
+        <file>images/bullet2.png</file>
+        <file>images/enemy.png</file>
+        <file>images/game_bg.png</file>
+        <file>images/heart1.png</file>
+        <file>images/heart2.png</file>
+        <file>images/menu_bg.png</file>
+        <file>images/player.jpg</file>
+    </qresource>
+    <qresource prefix="/sounds">
+        <file>sounds/shot.wav</file>
+        <file>sounds/miss.wav</file>
+        <file>sounds/prepare_for_shot.wav</file>
+    </qresource>
+</RCC>

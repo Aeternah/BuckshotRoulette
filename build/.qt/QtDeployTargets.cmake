@@ -1,0 +1,3 @@
+set(__QT_DEPLOY_TARGET_BuckshotRoulette_FILE Q:/BuckshotRoulette/build/BuckshotRoulette.exe)
+set(__QT_DEPLOY_TARGET_BuckshotRoulette_TYPE EXECUTABLE)
+set(__QT_DEPLOY_TARGET_BuckshotRoulette_RUNTIME_DLLS Q:/msys64/mingw64/bin/Qt6QuickControls2.dll;Q:/msys64/mingw64/bin/Qt6QuickLayouts.dll;Q:/msys64/mingw64/bin/Qt6Multimedia.dll;Q:/msys64/mingw64/bin/Qt6QuickTemplates2.dll;Q:/msys64/mingw64/bin/Qt6Quick.dll;Q:/msys64/mingw64/bin/Qt6OpenGL.dll;Q:/msys64/mingw64/bin/Qt6QmlMeta.dll;Q:/msys64/mingw64/bin/Qt6QmlModels.dll;Q:/msys64/mingw64/bin/Qt6QmlWorkerScript.dll;Q:/msys64/mingw64/bin/Qt6Qml.dll;Q:/msys64/mingw64/bin/Qt6Gui.dll;Q:/msys64/mingw64/bin/Qt6Network.dll;Q:/msys64/mingw64/bin/Qt6Core.dll)

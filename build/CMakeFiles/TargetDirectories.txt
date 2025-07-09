@@ -1,0 +1,6 @@
+Q:/BuckshotRoulette/build/CMakeFiles/BuckshotRoulette.dir
+Q:/BuckshotRoulette/build/CMakeFiles/BuckshotRoulette_qmlimportscan.dir
+Q:/BuckshotRoulette/build/CMakeFiles/edit_cache.dir
+Q:/BuckshotRoulette/build/CMakeFiles/rebuild_cache.dir
+Q:/BuckshotRoulette/build/CMakeFiles/BuckshotRoulette_autogen_timestamp_deps.dir
+Q:/BuckshotRoulette/build/CMakeFiles/BuckshotRoulette_autogen.dir

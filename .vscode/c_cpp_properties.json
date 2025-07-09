@@ -1,0 +1,27 @@
+{
+    "configurations": [
+        {
+            "name": "Win64",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "Q:/msys64/mingw64/include",
+                "Q:/msys64/mingw64/include/QtCore",
+                "Q:/msys64/mingw64/include/QtQml",
+                "Q:/msys64/mingw64/include/QtQuick",
+                "Q:/msys64/mingw64/include/QtNetwork",
+                "Q:/msys64/mingw64/include/QtGui",
+                "Q:/msys64/mingw64/include/qt6/QtGui",
+                "Q:/msys64/mingw64/include/qt6",
+                "Q:/msys64/mingw64/include/qt6/QtQml",
+                "Q:/msys64/mingw64/include/qt6/QtCore",
+                "Q:/msys64/mingw64/include/qt6/QtQuickControls2"
+            ],
+            "defines": [],
+            "compilerPath": "Q:/msys64/mingw64/bin/gcc.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}

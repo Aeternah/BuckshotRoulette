@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="/qml">
+    <file alias="main.qml">Q:/BuckshotRoulette/qml/main.qml</file>
+    <file alias="Menu.qml">Q:/BuckshotRoulette/qml/Menu.qml</file>
+    <file alias="Game.qml">Q:/BuckshotRoulette/qml/Game.qml</file>
+    <file alias="Shotgun.qml">Q:/BuckshotRoulette/qml/Shotgun.qml</file>
+  </qresource>
+</RCC>
+
