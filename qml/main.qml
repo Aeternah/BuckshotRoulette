@@ -10,7 +10,7 @@ ApplicationWindow {
     height: 720
     minimumWidth: 800
     minimumHeight: 600
-    title: "Рулетка с Курским маньяком"
+    title: "Игра с дробовиком"
     color: "#121212"
 
     property string currentScreen: "menu"

@@ -25,7 +25,7 @@ set(SOURCES
     src/GameLogic.cpp
 )
 
-set(HEADERS
+set(HEADERS 
     src/GameLogic.h
 )
 
