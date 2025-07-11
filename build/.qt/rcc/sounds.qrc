@@ -1,8 +1,0 @@
-<RCC>
-  <qresource prefix="/sounds">
-    <file alias="shot.wav">Q:/BuckshotRoulette/sounds/shot.wav</file>
-    <file alias="miss.wav">Q:/BuckshotRoulette/sounds/miss.wav</file>
-    <file alias="prepare_for_shot.wav">Q:/BuckshotRoulette/sounds/prepare_for_shot.wav</file>
-  </qresource>
-</RCC>
-
