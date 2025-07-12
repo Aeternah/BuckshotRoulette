@@ -92,3 +92,18 @@ int GameLogic::calculateEnemyDecision()
     }
     return QRandomGenerator::global()->bounded(2) == 0; // 50/50
 }
+
+void GameLogic::resetGame()
+{
+    m_playerHealth = 3;
+    m_enemyHealth = 3;
+    m_playerTurn = true;
+    m_bullets.clear();
+    m_currentChamber = 0;
+    m_enemyTimer->stop();
+    emit playerHealthChanged();
+    emit enemyHealthChanged();
+    emit playerTurnChanged();
+    emit bulletsChanged();
+    qDebug() << "Game reset: playerHealth=" << m_playerHealth << ", enemyHealth=" << m_enemyHealth;
+}

@@ -36,9 +36,21 @@ Rectangle {
             height: 80
             font.pixelSize: 24
             onClicked: {
-                gameLogic.loadBullets()
+                gameLogic.resetGame() // Сбрасываем игру
+                gameLogic.loadBullets() // Загружаем патроны
                 mainWindow.currentScreen = "game"
                 console.log("Switching to game screen")
+            }
+        }
+
+        Button {
+            text: "ИГРА ПО СЕТИ"
+            width: 300
+            height: 80
+            font.pixelSize: 24
+            onClicked: {
+                mainWindow.currentScreen = "networkMenu"
+                console.log("Switching to network menu screen")
             }
         }
 

@@ -23,10 +23,12 @@ find_package(Qt6 REQUIRED COMPONENTS
 set(SOURCES
     main.cpp
     src/GameLogic.cpp
+    src/networklogic.cpp
 )
 
 set(HEADERS 
     src/GameLogic.h
+    src/networklogic.h
 )
 
 qt_add_executable(${PROJECT_NAME}
@@ -43,6 +45,9 @@ qt_add_resources(${PROJECT_NAME} "qml"
         qml/Menu.qml
         qml/Game.qml
         qml/Shotgun.qml
+        qml/NetworkMenu.qml
+        qml/ServerScreen.qml
+        qml/JoinServerScreen.qml
 )
 
 
@@ -85,6 +90,9 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::QuickControls2
     Qt6::QuickLayouts
     Qt6::Core
+    Qt6::Gui
+    Qt6::Qml
+    Qt6::Network
     Qt6::Multimedia  # Добавляем Multimedia
 )
 

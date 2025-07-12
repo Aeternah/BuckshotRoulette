@@ -3,6 +3,9 @@
         <file>qml/main.qml</file>
         <file>qml/Menu.qml</file>
         <file>qml/Game.qml</file>
+        <file>qml/NetworkMenu.qml</file>
+        <file>qml/ServerScreen.qml</file>
+        <file>qml/JoinServerScreen.qml</file>
     </qresource>
     <qresource prefix="/images">
         <file>images/background.png</file>

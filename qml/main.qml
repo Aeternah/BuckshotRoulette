@@ -16,18 +16,27 @@ ApplicationWindow {
     property string currentScreen: "menu"
 
     GameLogic { id: gameLogic }
+    NetworkLogic { id: networkLogic }
 
     Loader {
         anchors.fill: parent
-        source: currentScreen === "menu" ? "qrc:/qml/Menu.qml" : "qrc:/qml/Game.qml"
+        source: currentScreen === "menu" ? "Menu.qml" : 
+                currentScreen === "networkMenu" ? "NetworkMenu.qml" : 
+                currentScreen === "serverScreen" ? "ServerScreen.qml" : 
+                currentScreen === "joinServerScreen" ? "JoinServerScreen.qml" : 
+                "Game.qml"
         onStatusChanged: {
             if (status === Loader.Ready) {
                 console.log("Loader loaded:", currentScreen)
                 if (currentScreen === "game") {
-                    gameLogic.loadBullets() // Инициализируем патроны при загрузке игры
+                    gameLogic.resetGame() // Сбрасываем игру при загрузке
+                    gameLogic.loadBullets() // Инициализируем патроны
                 }
             } else if (status === Loader.Error) {
-                console.log("Loader error for:", currentScreen)
+                console.log("Loader error for:", currentScreen, "- Source:", source)
+                resultDialog.text = "Ошибка загрузки: " + currentScreen
+                resultDialog.textColor = "red"
+                resultDialog.open()
             }
         }
         onLoaded: console.log("Loaded item:", item)
@@ -58,7 +67,8 @@ ApplicationWindow {
         onClosed: {
             if (gameLogic.playerHealth <= 0 || gameLogic.enemyHealth <= 0) {
                 mainWindow.currentScreen = "menu"
-                gameLogic.loadBullets() // Перезагрузка при проигрыше
+                gameLogic.resetGame() // Сбрасываем игру при возврате в меню
+                gameLogic.loadBullets() // Перезагрузка патронов
             }
         }
     }
@@ -69,6 +79,36 @@ ApplicationWindow {
             resultDialog.text = text
             resultDialog.textColor = color
             resultDialog.open()
+        }
+    }
+
+    Connections {
+        target: networkLogic
+        function onServerStarted(ip, port) {
+            resultDialog.text = "Сервер запущен: " + ip + ":" + port
+            resultDialog.textColor = "green"
+            resultDialog.open()
+        }
+        function onServerError(error) {
+            resultDialog.text = "Ошибка сервера: " + error
+            resultDialog.textColor = "red"
+            resultDialog.open()
+            mainWindow.currentScreen = "networkMenu"
+        }
+        function onClientConnected() {
+            resultDialog.text = "Подключено к серверу!"
+            resultDialog.textColor = "green"
+            resultDialog.open()
+            mainWindow.currentScreen = "game"
+        }
+        function onClientError(error) {
+            resultDialog.text = "Ошибка подключения: " + error
+            resultDialog.textColor = "red"
+            resultDialog.open()
+            mainWindow.currentScreen = "networkMenu"
+        }
+        function onMessageReceived(message) {
+            console.log("Message from server:", message)
         }
     }
 }

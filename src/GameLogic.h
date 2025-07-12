@@ -24,6 +24,7 @@ public:
     Q_INVOKABLE void loadBullets();
     Q_INVOKABLE void shoot(bool self);
     Q_INVOKABLE void switchTurn();
+    Q_INVOKABLE void resetGame(); // Новый метод для сброса игры
 
 signals:
     void playerHealthChanged();
