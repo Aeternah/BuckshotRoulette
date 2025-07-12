@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     engine.addImportPath("qrc:/qml");
     qputenv("QML_IMPORT_TRACE", "1");
 
-    const QUrl url(QStringLiteral("qrc:/qml/Main.qml"));
+    const QUrl url(QStringLiteral("qrc:/qml/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
         if (!obj && url == objUrl) {

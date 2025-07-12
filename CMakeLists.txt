@@ -17,8 +17,16 @@ find_package(Qt6 REQUIRED COMPONENTS
     QuickControls2 
     QuickLayouts
     Core
-    Multimedia  # Добавляем Multimedia для SoundEffect
+    Gui
+    Qml
+    Network
+    Multimedia
 )
+
+# Для Linux добавляем X11
+if(UNIX AND NOT APPLE)
+    find_package(X11 REQUIRED)
+endif()
 
 set(SOURCES
     main.cpp
@@ -49,10 +57,6 @@ qt_add_resources(${PROJECT_NAME} "qml"
         qml/ServerScreen.qml
         qml/JoinServerScreen.qml
 )
-
-
-
-
 
 # Ресурсы изображений
 qt_add_resources(${PROJECT_NAME} "images"
@@ -85,6 +89,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
+# Общие библиотеки для всех платформ
 target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Quick
     Qt6::QuickControls2
@@ -93,9 +98,17 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     Qt6::Gui
     Qt6::Qml
     Qt6::Network
-    Qt6::Multimedia  # Добавляем Multimedia
+    Qt6::Multimedia
 )
 
+# Дополнительно для Linux (X11)
+if(UNIX AND NOT APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${X11_LIBRARIES}
+    )
+endif()
+
+# Дополнительно для Windows
 if(WIN32)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
