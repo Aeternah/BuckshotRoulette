@@ -9,6 +9,12 @@ Rectangle {
     height: 720
     color: "#111"
 
+    Component.onCompleted: {
+        gameLogic.resetGame()
+        gameLogic.loadBullets()
+        console.log("Game screen initialized")
+    }
+
     Image {
         id: background
         anchors.fill: parent
@@ -16,10 +22,6 @@ Rectangle {
         fillMode: Image.PreserveAspectCrop
         opacity: 0.7
         z: -1
-        onStatusChanged: {
-            if (status === Image.Ready) console.log("Game background loaded")
-            else if (status === Image.Error) console.log("Game background error")
-        }
     }
 
     Rectangle {
@@ -32,11 +34,10 @@ Rectangle {
         SequentialAnimation {
             id: flashAnim
             running: false
-            onStarted: console.log("Muzzle flash started")
             PropertyAnimation { target: muzzleFlash; property: "opacity"; to: 0.7; duration: 50 }
             PauseAnimation { duration: 50 }
             PropertyAnimation { target: muzzleFlash; property: "opacity"; to: 0.0; duration: 200 }
-            ScriptAction { script: { muzzleFlash.visible = false; console.log("Muzzle flash finished") } }
+            ScriptAction { script: { muzzleFlash.visible = false } }
         }
     }
 
@@ -48,10 +49,6 @@ Rectangle {
         anchors.left: parent.left
         anchors.leftMargin: 100
         anchors.verticalCenter: parent.verticalCenter
-        onStatusChanged: {
-            if (status === Image.Ready) console.log("Player image loaded")
-            else if (status === Image.Error) console.log("Player image error")
-        }
 
         SequentialAnimation on y {
             id: playerHitAnim
@@ -105,7 +102,7 @@ Rectangle {
                 prepareForShotSound.play()
                 flashAnim.restart()
                 muzzleFlash.visible = true
-                gameLogic.shoot(false) // Стреляем во врага
+                gameLogic.shoot(false)
             }
         }
 
@@ -120,7 +117,7 @@ Rectangle {
                 prepareForShotSound.play()
                 flashAnim.restart()
                 muzzleFlash.visible = true
-                gameLogic.shoot(true) // Стреляем в себя
+                gameLogic.shoot(true)
             }
         }
     }
@@ -163,7 +160,7 @@ Rectangle {
 
     Text {
         id: turnText
-        text: gameLogic.playerTurn ? "Ваш ход" : "Ход врага: " + (enemyActionText.text || "Думает...")
+        text: gameLogic.playerTurn ? "Ваш ход" : "Ход врага"
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 20
@@ -240,7 +237,7 @@ Rectangle {
         focus: true
         anchors.centerIn: parent
         width: 600
-        height: 250 // Увеличим высоту для текста
+        height: 250
         visible: false
 
         background: Rectangle {
@@ -269,24 +266,27 @@ Rectangle {
                 }
             }
 
-            Button {
-                id: continueButton
-                text: "Продолжить"
-                width: 160
-                anchors.horizontalCenter: parent.horizontalCenter // Центрируем кнопку
-                onClicked: preloadDialog.close()
+            Text {
+                text: "Раунд начнется через 3 сек... (всего " + gameLogic.bullets.length + " патронов)"
+                color: "#aaa"
+                font.pixelSize: 20
+                anchors.horizontalCenter: parent.horizontalCenter
             }
         }
 
         onOpened: {
             prepareForShotSound.play()
             timer.start()
+            console.log("Preload dialog opened")
         }
 
         Timer {
             id: timer
             interval: 3000
-            onTriggered: preloadDialog.close()
+            onTriggered: {
+                preloadDialog.close()
+                gameLogic.startRound()
+            }
         }
     }
 
@@ -314,30 +314,28 @@ Rectangle {
             resultDialog.textColor = color
             resultDialog.open()
         }
-        function onMiss() { missSound.play(); gameLogic.switchTurn() }
+        function onMiss() {
+            missSound.play()
+            gameLogic.switchTurn()
+        }
         function onBulletsChanged() {
-            if (gameLogic.bullets.length > 0) {
-                preloadDialog.open() // Открываем при любом изменении с патронами
-            } else {
-                console.log("No bullets left, reloading...")
-                gameLogic.loadBullets() // Автоматическая перезагрузка
+            if (gameLogic.bullets.length == 0) {
+                console.log("No bullets left, reloading")
+                gameLogic.loadBullets()
             }
         }
         function onEnemyAction(action) {
             enemyActionText.text = action
             enemyTurnProgress.value = 0.0
             progressTimer.start()
-            if (action === "Стреляет в себя") {
-                gameLogic.shoot(true)
-            } else if (action === "Стреляет в тебя") {
-                gameLogic.shoot(false)
-            }
+            // ВАЖНО: мы больше не вызываем shoot() здесь!
         }
+        function onShowBulletsPreview() { preloadDialog.open() }
     }
 
     Timer {
         id: progressTimer
-        interval: 50
+        interval: 100
         repeat: true
         running: false
         onTriggered: {

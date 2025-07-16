@@ -1,12 +1,23 @@
 #include "GameLogic.h"
 #include <QRandomGenerator>
 #include <QDebug>
+#include <algorithm>
+#include <QColor>
 
-GameLogic::GameLogic(QObject *parent) : QObject(parent),
-    m_enemyTimer(new QTimer(this))
+GameLogic::GameLogic(QObject *parent)
+    : QObject(parent),
+      m_enemyTimer(new QTimer(this)),
+      m_enemyActionTimer(new QTimer(this)),
+      m_bulletsInitialized(false)
 {
     connect(m_enemyTimer, &QTimer::timeout, this, &GameLogic::processEnemyTurn);
-    m_playerTurn = true; // Начинаем всегда с игрока
+    connect(m_enemyActionTimer, &QTimer::timeout, [this]() {
+        m_enemyActionTimer->stop(); // на всякий случай
+        shoot(m_enemyPlannedShootSelf); // Стреляем через ~паузы~
+        m_enemyActing = false; // теперь враг свободен
+    });
+
+    m_playerTurn = true;
 }
 
 int GameLogic::playerHealth() const { return m_playerHealth; }
@@ -16,26 +27,36 @@ QVector<bool> GameLogic::bullets() const { return m_bullets; }
 
 void GameLogic::loadBullets()
 {
+    if (m_bulletsInitialized && !m_bullets.isEmpty()) return;
+
     m_bullets.clear();
-    int shellCount = QRandomGenerator::global()->bounded(2, 9); // 2-8 пуль
-    for (int i = 0; i < shellCount; ++i) {
-        m_bullets.append(QRandomGenerator::global()->bounded(2) == 0); // 50/50 live/blank
-    }
-    m_playerTurn = true; // Устанавливаем ход игрока
+    int shellCount = QRandomGenerator::global()->bounded(2, 7);
+    int liveCount = shellCount / 2 + (QRandomGenerator::global()->bounded(2) == 0 ? 1 : 0);
+
+    for (int i = 0; i < liveCount; ++i) m_bullets.append(true);
+    for (int i = 0; i < shellCount - liveCount; ++i) m_bullets.append(false);
+
+    std::random_shuffle(m_bullets.begin(), m_bullets.end());
     m_currentChamber = 0;
-    qDebug() << "Bullets loaded:" << m_bullets.size();
+    m_bulletsInitialized = true;
+
+    qDebug() << "Bullets loaded:" << m_bullets;
+    emit showBulletsPreview();
     emit bulletsChanged();
 }
 
 void GameLogic::shoot(bool self)
 {
     if (m_bullets.isEmpty()) {
-        emit showResult("Патроны закончились!", "red");
+        qDebug() << "No bullets left, forcing reload";
+        m_bulletsInitialized = false;
+        loadBullets();
         return;
     }
 
-    bool bang = m_bullets[m_currentChamber];
-    if (bang) {
+    bool isLive = m_bullets.takeFirst();
+
+    if (isLive) {
         if (self) {
             m_playerHealth--;
             emit playerHealthChanged();
@@ -49,48 +70,65 @@ void GameLogic::shoot(bool self)
         emit miss();
     }
 
-    if (!bang && self) {
-        // Холостой выстрел в себя — игрок остается на ходу
+    if (m_playerHealth <= 0) {
+        emit showResult("Вы проиграли!", QColor("red"));
+    } else if (m_enemyHealth <= 0) {
+        emit showResult("Вы победили!", QColor("green"));
     } else {
         switchTurn();
     }
 
-    m_currentChamber = (m_currentChamber + 1) % m_bullets.size();
-    if (m_currentChamber == 0) {
-        m_bullets.clear();
-        emit bulletsChanged();
-    }
-
-    if (m_playerHealth <= 0) {
-        emit showResult("Вы проиграли!", "red");
-    } else if (m_enemyHealth <= 0) {
-        emit showResult("Вы победили!", "green");
-    }
+    emit bulletsChanged();
 }
 
 void GameLogic::switchTurn()
 {
     m_playerTurn = !m_playerTurn;
     emit playerTurnChanged();
-    if (!m_playerTurn) {
-        m_enemyTimer->start(5000); // 5 секунд для хода врага
+
+    if (!m_playerTurn && !m_bullets.isEmpty()) {
+        if (!m_enemyActing) {
+            m_enemyActing = true;
+            m_enemyTimer->start(1500); // враг "думает"
+        }
     }
 }
+
 
 void GameLogic::processEnemyTurn()
 {
     m_enemyTimer->stop();
-    bool shootSelf = calculateEnemyDecision();
-    QString action = shootSelf ? "Стреляет в себя" : "Стреляет в тебя";
-    emit enemyAction(action);
+
+    if (m_bullets.isEmpty()) {
+        qDebug() << "No bullets for enemy turn, reloading";
+        m_bulletsInitialized = false;
+        m_enemyActing = false;
+        loadBullets();
+        return;
+    }
+
+    if (m_enemyActing) {
+        m_enemyPlannedShootSelf = calculateEnemyDecision();
+        QString action = m_enemyPlannedShootSelf ? "Стреляет в себя" : "Стреляет в тебя";
+        emit enemyAction(action);
+        m_enemyActionTimer->start(800); // подождём немного
+    }
 }
+
 
 int GameLogic::calculateEnemyDecision()
 {
-    if (m_enemyHealth == 1) {
-        return false; // Стреляет в игрока, если мало HP
+    int liveBullets = 0;
+    for (bool b : m_bullets) {
+        if (b) liveBullets++;
     }
-    return QRandomGenerator::global()->bounded(2) == 0; // 50/50
+
+    if (m_enemyHealth == 1) return false;
+    if (liveBullets == 1) return false;
+    if (liveBullets > m_bullets.size() / 2)
+        return QRandomGenerator::global()->bounded(100) < 70;
+
+    return QRandomGenerator::global()->bounded(2) == 0;
 }
 
 void GameLogic::resetGame()
@@ -101,9 +139,19 @@ void GameLogic::resetGame()
     m_bullets.clear();
     m_currentChamber = 0;
     m_enemyTimer->stop();
+    m_enemyActionTimer->stop();
+    m_bulletsInitialized = false;
+
+    qDebug() << "Game reset";
     emit playerHealthChanged();
     emit enemyHealthChanged();
     emit playerTurnChanged();
     emit bulletsChanged();
-    qDebug() << "Game reset: playerHealth=" << m_playerHealth << ", enemyHealth=" << m_enemyHealth;
+}
+
+void GameLogic::startRound()
+{
+    m_playerTurn = true;
+    emit playerTurnChanged();
+    emit bulletsChanged();
 }

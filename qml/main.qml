@@ -28,10 +28,6 @@ ApplicationWindow {
         onStatusChanged: {
             if (status === Loader.Ready) {
                 console.log("Loader loaded:", currentScreen)
-                if (currentScreen === "game") {
-                    gameLogic.resetGame() // Сбрасываем игру при загрузке
-                    gameLogic.loadBullets() // Инициализируем патроны
-                }
             } else if (status === Loader.Error) {
                 console.log("Loader error for:", currentScreen, "- Source:", source)
                 resultDialog.text = "Ошибка загрузки: " + currentScreen
@@ -68,7 +64,7 @@ ApplicationWindow {
             if (gameLogic.playerHealth <= 0 || gameLogic.enemyHealth <= 0) {
                 mainWindow.currentScreen = "menu"
                 gameLogic.resetGame() // Сбрасываем игру при возврате в меню
-                gameLogic.loadBullets() // Перезагрузка патронов
+                // Не вызываем loadBullets здесь, оно будет в Game.qml
             }
         }
     }

@@ -2,8 +2,8 @@
 #define GAMELOGIC_H
 
 #include <QObject>
-#include <QVector>
 #include <QTimer>
+#include <QVector>
 
 class GameLogic : public QObject
 {
@@ -21,34 +21,38 @@ public:
     bool playerTurn() const;
     QVector<bool> bullets() const;
 
-    Q_INVOKABLE void loadBullets();
-    Q_INVOKABLE void shoot(bool self);
-    Q_INVOKABLE void switchTurn();
-    Q_INVOKABLE void resetGame(); // Новый метод для сброса игры
+public slots:
+    void loadBullets();
+    void shoot(bool self);
+    void switchTurn();
+    void processEnemyTurn();
+    void resetGame();
+    void startRound();
 
 signals:
     void playerHealthChanged();
     void enemyHealthChanged();
     void playerTurnChanged();
     void bulletsChanged();
-    void showResult(const QString &text, const QString &color);
     void playerDamaged();
     void enemyDamaged();
     void miss();
+    void showResult(const QString &text, const QColor &color);
     void enemyAction(const QString &action);
-
-private slots:
-    void processEnemyTurn();
+    void showBulletsPreview();
 
 private:
     int m_playerHealth = 3;
     int m_enemyHealth = 3;
-    bool m_playerTurn = true;
+    bool m_playerTurn;
     QVector<bool> m_bullets;
     int m_currentChamber = 0;
-    QTimer* m_enemyTimer;
-
+    QTimer *m_enemyTimer;
+    QTimer *m_enemyActionTimer;
+    bool m_enemyPlannedShootSelf;
+    bool m_enemyActing = false; // <-- новый флаг
     int calculateEnemyDecision();
+    bool m_bulletsInitialized = false;
 };
 
 #endif // GAMELOGIC_H

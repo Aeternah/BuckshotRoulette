@@ -37,7 +37,6 @@ Rectangle {
             font.pixelSize: 24
             onClicked: {
                 gameLogic.resetGame() // Сбрасываем игру
-                gameLogic.loadBullets() // Загружаем патроны
                 mainWindow.currentScreen = "game"
                 console.log("Switching to game screen")
             }
