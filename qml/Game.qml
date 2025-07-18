@@ -10,8 +10,7 @@ Rectangle {
     color: "#111"
 
     Component.onCompleted: {
-        gameLogic.resetGame()
-        gameLogic.loadBullets()
+        gameLogic.initializeBullets()
         console.log("Game screen initialized")
     }
 
@@ -162,8 +161,8 @@ Rectangle {
         id: turnText
         text: gameLogic.playerTurn ? "Ваш ход" : "Ход врага"
         anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
         anchors.topMargin: 20
+        anchors.horizontalCenter: parent.horizontalCenter
         color: "white"
         font.pixelSize: 28
     }
@@ -274,19 +273,23 @@ Rectangle {
             }
         }
 
-        onOpened: {
-            prepareForShotSound.play()
-            timer.start()
-            console.log("Preload dialog opened")
-        }
-
         Timer {
-            id: timer
+            id: preloadTimer
             interval: 3000
             onTriggered: {
                 preloadDialog.close()
-                gameLogic.startRound()
             }
+        }
+
+        onOpened: {
+            prepareForShotSound.play()
+            preloadTimer.start()
+            console.log("Preload dialog opened")
+        }
+
+        onClosed: {
+            gameLogic.shuffleBullets()
+            gameLogic.startRound()
         }
     }
 
@@ -307,42 +310,52 @@ Rectangle {
 
     Connections {
         target: gameLogic
-        function onPlayerDamaged() { playerHitAnim.restart(); shotSound.play() }
-        function onEnemyDamaged() { enemyHitAnim.restart(); shotSound.play() }
+        function onPlayerDamaged() { 
+            playerHitAnim.restart(); 
+            shotSound.play();
+            flashAnim.restart();
+            muzzleFlash.visible = true;
+        }
+        function onEnemyDamaged() { 
+            enemyHitAnim.restart(); 
+            shotSound.play();
+            flashAnim.restart();
+            muzzleFlash.visible = true;
+        }
         function onShowResult(text, color) {
             resultDialog.text = text
             resultDialog.textColor = color
             resultDialog.open()
         }
         function onMiss() {
-            missSound.play()
-            gameLogic.switchTurn()
+            missSound.play();
+            flashAnim.restart();
+            muzzleFlash.visible = true;
         }
         function onBulletsChanged() {
             if (gameLogic.bullets.length == 0) {
                 console.log("No bullets left, reloading")
-                gameLogic.loadBullets()
+                gameLogic.initializeBullets()
             }
         }
         function onEnemyAction(action) {
             enemyActionText.text = action
             enemyTurnProgress.value = 0.0
             progressTimer.start()
-            // ВАЖНО: мы больше не вызываем shoot() здесь!
         }
         function onShowBulletsPreview() { preloadDialog.open() }
     }
 
     Timer {
         id: progressTimer
-        interval: 100
+        interval: 60 // 3000 мс / 50 тиков = 60 мс на тик
         repeat: true
         running: false
         onTriggered: {
-            enemyTurnProgress.value += 0.01
+            enemyTurnProgress.value += 0.02; // 50 тиков до 1.0 за 3000 мс
             if (enemyTurnProgress.value >= 1.0) {
-                progressTimer.stop()
-                gameLogic.switchTurn()
+                progressTimer.stop();
+                enemyTurnProgress.value = 0.0;
             }
         }
     }

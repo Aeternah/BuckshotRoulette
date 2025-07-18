@@ -63,8 +63,7 @@ ApplicationWindow {
         onClosed: {
             if (gameLogic.playerHealth <= 0 || gameLogic.enemyHealth <= 0) {
                 mainWindow.currentScreen = "menu"
-                gameLogic.resetGame() // Сбрасываем игру при возврате в меню
-                // Не вызываем loadBullets здесь, оно будет в Game.qml
+                gameLogic.resetGame()
             }
         }
     }

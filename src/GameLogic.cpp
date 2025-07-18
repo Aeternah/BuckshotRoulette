@@ -2,6 +2,7 @@
 #include <QRandomGenerator>
 #include <QDebug>
 #include <algorithm>
+#include <random>
 #include <QColor>
 
 GameLogic::GameLogic(QObject *parent)
@@ -10,11 +11,9 @@ GameLogic::GameLogic(QObject *parent)
       m_enemyActionTimer(new QTimer(this)),
       m_bulletsInitialized(false)
 {
-    connect(m_enemyTimer, &QTimer::timeout, this, &GameLogic::processEnemyTurn);
     connect(m_enemyActionTimer, &QTimer::timeout, [this]() {
-        m_enemyActionTimer->stop(); // на всякий случай
-        shoot(m_enemyPlannedShootSelf); // Стреляем через ~паузы~
-        m_enemyActing = false; // теперь враг свободен
+        m_enemyActionTimer->stop();
+        shoot(m_enemyPlannedShootSelf);
     });
 
     m_playerTurn = true;
@@ -25,7 +24,7 @@ int GameLogic::enemyHealth() const { return m_enemyHealth; }
 bool GameLogic::playerTurn() const { return m_playerTurn; }
 QVector<bool> GameLogic::bullets() const { return m_bullets; }
 
-void GameLogic::loadBullets()
+void GameLogic::initializeBullets()
 {
     if (m_bulletsInitialized && !m_bullets.isEmpty()) return;
 
@@ -36,12 +35,20 @@ void GameLogic::loadBullets()
     for (int i = 0; i < liveCount; ++i) m_bullets.append(true);
     for (int i = 0; i < shellCount - liveCount; ++i) m_bullets.append(false);
 
-    std::random_shuffle(m_bullets.begin(), m_bullets.end());
     m_currentChamber = 0;
     m_bulletsInitialized = true;
 
-    qDebug() << "Bullets loaded:" << m_bullets;
+    qDebug() << "Bullets initialized (not shuffled):" << m_bullets;
     emit showBulletsPreview();
+    emit bulletsChanged();
+}
+
+void GameLogic::shuffleBullets()
+{
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(m_bullets.begin(), m_bullets.end(), g);
+    qDebug() << "Bullets shuffled:" << m_bullets;
     emit bulletsChanged();
 }
 
@@ -50,7 +57,8 @@ void GameLogic::shoot(bool self)
     if (m_bullets.isEmpty()) {
         qDebug() << "No bullets left, forcing reload";
         m_bulletsInitialized = false;
-        loadBullets();
+        m_enemyActing = false;
+        initializeBullets();
         return;
     }
 
@@ -72,10 +80,41 @@ void GameLogic::shoot(bool self)
 
     if (m_playerHealth <= 0) {
         emit showResult("Вы проиграли!", QColor("red"));
+        m_enemyActing = false;
+        return;
     } else if (m_enemyHealth <= 0) {
         emit showResult("Вы победили!", QColor("green"));
+        m_enemyActing = false;
+        return;
+    }
+
+    // Логика смены хода
+    if (m_playerTurn) {
+        // Игрок стреляет
+        if (!self || isLive) {
+            // Выстрел в противника или в себя боевым патроном -> ход боту
+            m_enemyActing = false; // Сбрасываем перед сменой хода
+            switchTurn();
+        }
+        // Выстрел в себя холостым -> ход остаётся у игрока
     } else {
-        switchTurn();
+        // Бот стреляет
+        if (self || isLive) {
+            // Выстрел в игрока или в себя боевым патроном -> ход игроку
+            m_enemyActing = false; // Сбрасываем перед сменой хода
+            switchTurn();
+        } else {
+            // Выстрел в себя холостым -> ход остаётся у бота
+            m_enemyActing = false; // Сбрасываем, чтобы начать новый ход
+            if (!m_bullets.isEmpty()) {
+                m_enemyActing = true;
+                processEnemyTurn(); // Запускаем новый ход бота
+            } else {
+                // Если патроны закончились, начинаем новый раунд
+                m_bulletsInitialized = false;
+                initializeBullets();
+            }
+        }
     }
 
     emit bulletsChanged();
@@ -89,32 +128,28 @@ void GameLogic::switchTurn()
     if (!m_playerTurn && !m_bullets.isEmpty()) {
         if (!m_enemyActing) {
             m_enemyActing = true;
-            m_enemyTimer->start(1500); // враг "думает"
+            processEnemyTurn();
         }
     }
 }
 
-
 void GameLogic::processEnemyTurn()
 {
-    m_enemyTimer->stop();
-
     if (m_bullets.isEmpty()) {
         qDebug() << "No bullets for enemy turn, reloading";
         m_bulletsInitialized = false;
         m_enemyActing = false;
-        loadBullets();
+        initializeBullets();
         return;
     }
 
     if (m_enemyActing) {
         m_enemyPlannedShootSelf = calculateEnemyDecision();
-        QString action = m_enemyPlannedShootSelf ? "Стреляет в себя" : "Стреляет в тебя";
+        QString action = m_enemyPlannedShootSelf ? "Стреляет в тебя" : "Стреляет в себя";
         emit enemyAction(action);
-        m_enemyActionTimer->start(800); // подождём немного
+        m_enemyActionTimer->start(3000); // Задержка 3 секунды
     }
 }
-
 
 int GameLogic::calculateEnemyDecision()
 {
@@ -141,6 +176,7 @@ void GameLogic::resetGame()
     m_enemyTimer->stop();
     m_enemyActionTimer->stop();
     m_bulletsInitialized = false;
+    m_enemyActing = false;
 
     qDebug() << "Game reset";
     emit playerHealthChanged();
@@ -152,6 +188,7 @@ void GameLogic::resetGame()
 void GameLogic::startRound()
 {
     m_playerTurn = true;
+    m_enemyActing = false;
     emit playerTurnChanged();
     emit bulletsChanged();
 }

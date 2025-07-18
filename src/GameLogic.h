@@ -22,7 +22,8 @@ public:
     QVector<bool> bullets() const;
 
 public slots:
-    void loadBullets();
+    void initializeBullets();
+    void shuffleBullets();
     void shoot(bool self);
     void switchTurn();
     void processEnemyTurn();
@@ -50,7 +51,7 @@ private:
     QTimer *m_enemyTimer;
     QTimer *m_enemyActionTimer;
     bool m_enemyPlannedShootSelf;
-    bool m_enemyActing = false; // <-- новый флаг
+    bool m_enemyActing = false;
     int calculateEnemyDecision();
     bool m_bulletsInitialized = false;
 };
